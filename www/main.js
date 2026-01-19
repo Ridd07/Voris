@@ -52,4 +52,12 @@ $(document).ready(function () {
     } catch (error) {
         console.error("Error initializing SiriWave:", error);
     }
+
+    //mic button click event
+    $("#MicBtn").click(function () { 
+        eel.playAssistantSound()
+        $("#Oval").attr("hidden", true);
+        $("#SiriWave").attr("hidden", false);
+        
+    });
 });
