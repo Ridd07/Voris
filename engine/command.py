@@ -32,7 +32,7 @@ def takecommand():
         print(f"user said: {query}", flush=True)
         eel.DisplayMessage(query)
         time.sleep(2)
-    except Exception as e:
+    except Exception:
         return ""
     
     return query.lower()
@@ -47,14 +47,38 @@ def allCommands():
         if "open" in query:
             from engine.features import openCommand
             openCommand(query)
-        elif "on youtube":
+        elif "on youtube" in query:
             from engine.features import PlayYoutube
             PlayYoutube(query)
-            
-        else:
-            print("not run")
 
-    except:
-        print("error")
+        elif "send message" in query or "send a message" in query or "phone call" in query or "call" in query or "video call" in query:
+            from engine.features import findContact, whatsApp
+            
+            contact_no, name = findContact(query)
+
+            if contact_no != 0:
+                flag = ""
+                message_content = ""
+            
+                if "video call" in query:
+                    flag = 'video'
+
+                elif "phone call" in query or "call" in query:
+                    flag = 'call'
+
+                elif "send message" in query or "send a message" in query:
+                    flag = 'message'
+                    speak("what message to send")
+                    message_content = takecommand() 
+
+                
+                if flag != "":
+                    whatsApp(contact_no, message_content, flag, name)
+                
+            else:
+                print("not run")
+
+    except Exception as err:
+        print(f"Error in allCommands: {err}")
 
     eel.ShowHood()

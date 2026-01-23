@@ -1,4 +1,4 @@
- $(document).ready(function () {
+$(document).ready(function () {
     // Display Speak Message
     eel.expose(DisplayMessage)
     function DisplayMessage(message) {
@@ -11,8 +11,8 @@
     eel.expose(ShowHood)
     function ShowHood() {
         $("#Oval").attr("hidden", false);
-        $("#Siriwave").attr("hidden", true);
+        $("#SiriWave").attr("hidden", true);
     }
- });
+});
 
 

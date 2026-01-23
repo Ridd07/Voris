@@ -20,9 +20,4 @@ def remove_words(input_string, words_to_remove):
 
     return result_string
 
-#Example usage
-input_string = "make a phone call to papa"
-words_to_remove = ['make', 'a', 'to', 'phone', 'call', 'send', 'message', 'whatsapp', ' ']
 
-result = remove_words(input_string, words_to_remove)
-print(result)

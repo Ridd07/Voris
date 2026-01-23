@@ -53,6 +53,6 @@ desired_columns_indices = [0, 18]
 # query = 'Riddhi'
 # query = query.strip().lower()
 
-# cursor.execute("SELECT mobile_no FROM contact WHERE LOWER(name) LIKE ? OR LOWER(name) LIKE ?", ('%' +query + '%', query + '%'))
-# results = cursor.fetchall()
-# print(results[0][0])
+        # cursor.execute("SELECT mobile_no FROM contact WHERE LOWER(name) LIKE ? OR LOWER(name) LIKE ?", ('%' +query + '%', query + '%'))
+        # results = cursor.fetchall()
+        # print(results[0][0])
