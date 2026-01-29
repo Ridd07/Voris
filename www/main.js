@@ -54,13 +54,13 @@ $(document).ready(function () {
     }
 
     //mic button click event
-    $("#MicBtn").click(function () { 
+    $("#MicBtn").click(function () {
         eel.playAssistantSound()
         $("#Oval").attr("hidden", true);
         $("#SiriWave").attr("hidden", false);
         eel.allCommands()()
 
-     });
+    });
 
     function doc_keyUp(e) {
         // this would test for whichever key is 40 (down arrow) and the ctrl key at the  same time
@@ -73,5 +73,50 @@ $(document).ready(function () {
             eel.allCommands()();
         }
     }
-    document.addEventListener('keyup', doc_keyUp, false);  
+    document.addEventListener('keyup', doc_keyUp, false);
+
+    function PlayAssistant(message) {
+
+        if (message != "") {
+
+            $("#Oval").attr("hidden", true);
+            $("#SiriWave").attr("hidden", false);
+            eel.allCommands(message);
+            $("#chatbox").val("")
+            $("#MicBtn").attr('hidden', false);
+            $("#sendBtn").attr('hidden', true);
+        }
+    }
+
+    function ShowHideButton(message) {
+        if (message.length == 0) {
+            $("#MicBtn").attr('hidden', false);
+            $("#sendBtn").attr('hidden', true);
+        }
+        else {
+            $("#MicBtn").attr('hidden', true);
+            $("#sendBtn").attr('hidden', false);
+        }
+    }
+
+    $("#chatbox").keyup(function () {
+
+        let message = $("#chatbox").val();
+        ShowHideButton(message)
+    });
+
+    $("#sendBtn").click(function () {
+
+        let message = $("#chatbox").val()
+        PlayAssistant(message)
+    });
+
+    $("#chatbox").keypress(function (e) { 
+        key = e.which;
+        if (key == 13) {
+            let message = $("#chatbox").val()
+            PlayAssistant(message)
+        }
+        
+    });
 });

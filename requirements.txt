@@ -1,0 +1,6 @@
+eel
+playsound==1.2.2
+pywhatkit
+pvporcupine
+pyaudio
+pyautogui
