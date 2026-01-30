@@ -12,47 +12,26 @@ cursor.execute('''
     )
 ''')
 
-#query = "INSERT INTO sys_command VALUES (null,'one note', 'C:/Program Files/Microsoft Office/root/Office16/ONENOTE.exe')"
-#cursor.execute(query)
-#con.commit()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        role TEXT,
+        content TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+''')
 
-#query = "CREATE TABLE IF NOT EXISTS web_command(id interger primary key, name VARCHAR(100), url VARCHAR(1000))"
-#cursor.execute(query)
+def add_message(role, content):
+    try:
+        cursor.execute("INSERT INTO messages (role, content) VALUES (?, ?)", (role, content))
+        con.commit()
+    except Exception as e:
+        print(f"Error adding message: {e}")
 
-#query = "INSERT INTO web_command VALUES (null,'canva', 'https://www.canva.com/')"
-#cursor.execute(query)
-#con.commit()
-
-# testing module
-#app_name = "android studio"
-#cursor.execute('SELECT path FROM sys_command WHERE name IN (?)', (app_name,))
-#results = cursor.fetchall()
-#print(results)
-
-# Create a table with the desired columns
-#cursor.execute('''CREATE TABLE IF NOT EXISTS contacts (id interger primary key, name VARCHAR(200), mobile_no VARCHAR(255), email VARCHAR(255) NULL)''')
-
-#specify the column indices you want to import (0-based index)
-#Example: Importing the 1st and 3rd columns
-desired_columns_indices = [0, 18]
-
-# #Read data from CSV andd insert into SQLite table for the desired columns
-# with open('contacts.csv', 'r', encoding='utf-8') as csvfile:
-#     csvreader = csv.reader(csvfile)
-#     for row in csvreader:
-#         # Check if the row has enough columns and is not empty
-#         if len(row) > max(desired_columns_indices):
-#             selected_data = [row[i] for i in desired_columns_indices]
-#             cursor.execute(''' INSERT INTO contact (id, 'name', 'mobile_no') VALUES (null, ?, ?);''',tuple(selected_data)) 
-
-
-# # Commit changes and close connection
-# con.commit()
-# con.close()
-
-# query = 'Riddhi'
-# query = query.strip().lower()
-
-        # cursor.execute("SELECT mobile_no FROM contact WHERE LOWER(name) LIKE ? OR LOWER(name) LIKE ?", ('%' +query + '%', query + '%'))
-        # results = cursor.fetchall()
-        # print(results[0][0])
+def get_recent_messages(limit=50):
+    try:
+        cursor.execute("SELECT role, content FROM messages ORDER BY id DESC LIMIT ?", (limit,))
+        return cursor.fetchall()[::-1] # Return in chronological order
+    except Exception as e:
+        print(f"Error getting messages: {e}")
+        return []

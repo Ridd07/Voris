@@ -2,6 +2,7 @@ import pyttsx3
 import speech_recognition as sr
 import eel
 import time
+from engine.db import add_message, get_recent_messages
 
 
 def speak(text):
@@ -11,6 +12,8 @@ def speak(text):
     engine.setProperty('rate', 174)
     eel.DisplayMessage(text)
     engine.say(text)
+    eel.receiverText(text)
+    add_message('assistant', text)
     engine.runAndWait()
 
 
@@ -43,8 +46,12 @@ def allCommands(message=1):
     if message == 1:
         query = takecommand()
         print(query)
+        eel.senderText(query)
+        add_message('user', query)
     else:
         query = str(message).lower()
+        eel.senderText(query)
+        add_message('user', query)
 
     try:
 
@@ -87,3 +94,12 @@ def allCommands(message=1):
         print(f"Error in allCommands: {err}")
 
     eel.ShowHood()
+
+@eel.expose
+def loadChatHistory():
+    messages = get_recent_messages()
+    for role, content in messages:
+        if role == 'user':
+            eel.senderText(content)
+        else:
+            eel.receiverText(content)
