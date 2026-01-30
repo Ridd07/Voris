@@ -17,6 +17,7 @@ from engine.helper import remove_words
 from pipes import quote
 import subprocess
 import pyautogui
+from hugchat import hugchat
 
 # Playing assistant sound function
 con = sqlite3.connect("voris.db")
@@ -215,3 +216,14 @@ def whatsApp(mobile_no, message, flag, name):
 
     # pyautogui.hotkey('enter')
     # speak(voris_message)
+
+#chat bot
+def chatBot(query):
+    user_input = query.lower()
+    chatbot = hugchat.ChatBot(cookie_path="engine\cookies.json")
+    id = chatbot.new_conversation()
+    chatbot.change_conversation(id)
+    response = chatbot.chat(user_input)
+    print(response)
+    speak(response)
+    return response

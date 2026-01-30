@@ -6,6 +6,7 @@ from engine.db import add_message, get_recent_messages
 
 
 def speak(text):
+    text = str(text)
     engine = pyttsx3.init('sapi5')
     voices = engine.getProperty('voices')
     engine.setProperty('voice', voices[1].id)
@@ -88,7 +89,12 @@ def allCommands(message=1):
                     whatsApp(contact_no, message_content, flag, name)
                 
             else:
-                print("not run")
+                from engine.features import chatBot
+                chatBot(query)
+
+        else:
+            from engine.features import chatBot
+            chatBot(query)
 
     except Exception as err:
         print(f"Error in allCommands: {err}")
