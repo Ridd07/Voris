@@ -1,4 +1,4 @@
-ASSISTANT_NAME = "voris"
+ASSISTANT_NAME = "VORIS"
 
 # WhatsApp Call Button Coordinates
 # To find these coordinates:

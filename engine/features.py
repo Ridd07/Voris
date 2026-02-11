@@ -17,7 +17,8 @@ from engine.helper import remove_words
 from pipes import quote
 import subprocess
 import pyautogui
-from hugchat import hugchat
+#from hugchat import hugchat
+import subprocess
 
 # Playing assistant sound function
 con = sqlite3.connect("voris.db")
@@ -275,12 +276,47 @@ def whatsApp(mobile_no, message, flag, name):
     # speak(voris_message)
 
 #chat bot
-def chatBot(query):
-    user_input = query.lower()
-    chatbot = hugchat.ChatBot(cookie_path="engine\cookies.json")
-    id = chatbot.new_conversation()
-    chatbot.change_conversation(id)
-    response = chatbot.chat(user_input)
-    print(response)
-    speak(response)
-    return response
+# def chatBot(query):
+#     user_input = query.lower()
+#     chatbot = hugchat.ChatBot(cookie_path="engine\cookies.json")
+#     id = chatbot.new_conversation()
+#     chatbot.change_conversation(id)
+#     response = chatbot.chat(user_input)
+#     print(response)
+#     speak(response)
+#     return response
+
+# ai chat bot using Ollama (local LLM)
+def aiChat(query):
+    try:
+        user_input = query.strip()
+        
+        # System instructions to give the model context
+        system_instruction = f"You are {ASSISTANT_NAME}, a helpful and concise AI assistant. Answer the user's question directly and briefly."
+        
+        # Combine system instruction and user input for the 'run' command
+        full_prompt = f"System: {system_instruction}\nUser: {user_input}"
+
+        # Call Ollama model
+        result = subprocess.run(
+            ["ollama", "run", "llama3.2"],
+            input=full_prompt,
+            text=True,
+            capture_output=True
+        )
+
+        response = result.stdout.strip()
+
+        if not response:
+            response = "Sorry, I did not understand that."
+
+        print(response)
+        speak(response)
+        return response
+
+    except Exception as err:
+        print(f"Ollama Chat Error: {err}")
+        speak("Sorry, I am facing an error.")
+        return ""
+
+

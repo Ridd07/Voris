@@ -1,29 +1,32 @@
 @echo off
+echo.
+echo ========================================
+echo   SETTING UP ADB CONNECTION
+echo ========================================
+echo.
+
 echo Disconnecting old connections...
-adb disconnect
-echo Checking for connected devices...
-adb tcpip 5555
-echo Waiting for device to initialize
-timeout 3
-FOR /F "tokens=2" %%G IN ('adb shell ip addr show wlan0 ^|find "inet "') DO set ipfull=%%G
-FOR /F "tokens=1 delims=/" %%G in ("%ipfull") DO set ip=%%G
-echo Connecting to device with IP %ip%...
-adb connect %ip%
+adb disconnect >nul 2>&1
 
-@echo off
+echo Checking for USB devices...
+adb devices | find "device" | find /v "List" >nul
+if errorlevel 1 (
+    echo [!] No USB device detected or unauthorized.
+    echo [TIP] Try "Wireless Debugging" on your OnePlus.
+) else (
+    echo [+] USB device found. Switching to TCPIP...
+    adb tcpip 5555
+    timeout /t 3 /nobreak >nul
+)
 
-rem Set the IP address of your Android device
-set DEVICE_IP=192.0.0.4
+:: Try to connect
+echo.
+set /p DEVICE_IP="Enter Phone IP (from Wireless Debugging Settings): "
+if "%DEVICE_IP%"=="" set DEVICE_IP=192.168.0.4
 
-rem Set the port number for ADB
-set ADB_PORT=5555
-
-rem Restart the ADB server
-set ADB_PATH="adb"
-
-rem Restart the ADB server
-%ADB_PATH% kill-server
-%ADB_PATH% start-server
-
-rem Connect to the Android device over Wi-Fi
-%ADB_PATH% connect %DEVICE_IP%:DEVICE_IP%:%ADB_PORT%
+echo Connecting to %DEVICE_IP%:5555...
+adb connect %DEVICE_IP%:5555
+echo.
+adb devices
+echo ========================================
+echo.

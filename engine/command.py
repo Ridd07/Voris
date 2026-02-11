@@ -85,16 +85,19 @@ def allCommands(message=1):
                     message_content = takecommand() 
 
                 
+                
                 if flag != "":
                     whatsApp(contact_no, message_content, flag, name)
                 
+            # else:
+            #     from engine.features import chatBot
+            #     chatBot(query)
             else:
-                from engine.features import chatBot
-                chatBot(query)
-
+                    from engine.features import aiChat
+                    aiChat(query)
         else:
-            from engine.features import chatBot
-            chatBot(query)
+            from engine.features import aiChat
+            aiChat(query)
 
     except Exception as err:
         print(f"Error in allCommands: {err}")

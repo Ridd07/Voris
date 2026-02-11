@@ -4,3 +4,4 @@ pywhatkit
 pvporcupine
 pyaudio
 pyautogui
+SpeechRecognition
