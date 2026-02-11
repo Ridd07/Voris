@@ -3,3 +3,10 @@ contacts.csv
 voris.db
 /engine/__ptcache__
 /engine/cookies.json
+
+envvoris/
+venv/
+__pycache__/
+*.pyc
+.env
+

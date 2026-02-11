@@ -3,7 +3,7 @@ import os
 from playsound import playsound
 import eel
 from engine.command import speak
-from engine.config import ASSISTANT_NAME
+from engine.config import ASSISTANT_NAME, VIDEO_CALL_COORDS, VOICE_CALL_COORDS
 import pywhatkit as kit
 import re
 import sqlite3
@@ -163,25 +163,28 @@ def whatsApp(mobile_no, message, flag, name):
              speak("Message content is empty. Aborting.")
              return
         target_tab = 12
-        voris_message = "message sent successfully to " + name
+        start_message = "I am opening your WhatsApp and sending message to " + name
+        end_message = "message sent successfully to " + name
 
     elif flag == 'call':
         target_tab = 9 # User calibrated: 3 tabs for phone call
         message = ''
-        voris_message = "calling to " + name
+        start_message = "I am opening your WhatsApp and calling " + name
+        end_message = "calling to " + name
 
     elif flag == 'video':
         target_tab = 8 # User calibrated: 2 tabs for video call
         message = ''
-        voris_message = "starting video call with " + name
+        start_message = "I am opening your WhatsApp and starting video call with " + name
+        end_message = "starting video call with " + name
         
     else:
         # Invalid flag
-        print("Invalid flag passed to whatsApp")
+        print("Invalid flag passed to features.whatsApp")
         return
 
     # Speak immediately to confirm action
-    speak(voris_message)
+    speak(start_message)
 
     # Construct the URL - strictly for opening the chat
     whatsapp_url = f"whatsapp://send?phone={mobile_no}"
@@ -190,26 +193,80 @@ def whatsApp(mobile_no, message, flag, name):
     full_command = f'start "" "{whatsapp_url}"'
 
     # open WhatsApp with the constructed URL using cmd.exe
+    print(f"DEBUG: Opening WhatsApp for {mobile_no} with command: {full_command}")
     subprocess.run(full_command, shell=True)
-    time.sleep(5) # Wait for WhatsApp to open and load
+    
+    # Wait for WhatsApp to open and load
+    print("DEBUG: Waiting for WhatsApp to load (10s)...")
+    time.sleep(10) # Increased from 5 to 10 seconds
 
     if flag == 'message':
         # Type the message and press enter to send
+        print(f"DEBUG: Typing message: {message}")
+        
+        # Ensure focus by clicking (optional, but let's stick to delays first)
+        # pyautogui.click() 
+        
         pyautogui.write(message)
+        time.sleep(1) # Delay before pressing enter
+        print("DEBUG: Pressing Enter")
         pyautogui.press('enter')
     else:
-        # Reverting to Tab method as per user request
-        # Phone call = 3 tabs, Video call = 2 tabs
-        # Initial sleep to ensure focus
-        time.sleep(0.5)
+        # Use coordinate-based clicking if configured, otherwise use improved click method
+        use_coords = False
+        click_coords = None
         
-        for i in range(target_tab): 
-            pyautogui.press('tab')
-            time.sleep(0.1) # Small delay between tabs
+        if flag == 'video' and VIDEO_CALL_COORDS is not None:
+            use_coords = True
+            click_coords = VIDEO_CALL_COORDS
+            print(f"DEBUG: Using coordinate-based click for video call at {click_coords}")
+        elif flag == 'call' and VOICE_CALL_COORDS is not None:
+            use_coords = True
+            click_coords = VOICE_CALL_COORDS
+            print(f"DEBUG: Using coordinate-based click for voice call at {click_coords}")
+        
+        if use_coords and click_coords:
+            # Coordinate-based method (most reliable)
+            time.sleep(1)  # Wait for WhatsApp to be ready
+            pyautogui.click(click_coords[0], click_coords[1])
+            print(f"DEBUG: Clicked at coordinates {click_coords}")
+        else:
+            # Alternative method: Click on "Call" button dropdown
+            # Based on the screenshot, the Call button is in the top-right area
+            print(f"DEBUG: Using improved click method for {flag}")
+            time.sleep(1)
             
-        pyautogui.press('enter')
+            # First, click on the "Call" dropdown button (top right of chat)
+            # We'll use a relative position from the top-right corner
+            # Adjust these coordinates based on your screen resolution
+            screen_width, screen_height = pyautogui.size()
+            
+            # Estimate: Call button is approximately 90 pixels from right edge, 30 pixels from top
+            call_button_x = screen_width - 90
+            call_button_y = 30
+            
+            print(f"DEBUG: Clicking Call button at ({call_button_x}, {call_button_y})")
+            pyautogui.click(call_button_x, call_button_y)
+            time.sleep(1)
+            
+            # Now the dropdown menu is open
+            # Video call is typically the first option, Voice call is the second
+            if flag == 'video':
+                # Click on "Video call" option (first in dropdown)
+                # Dropdown appears below the Call button
+                video_option_x = call_button_x - 50  # Slightly to the left
+                video_option_y = call_button_y + 40  # Below the button
+                print(f"DEBUG: Clicking Video call option at ({video_option_x}, {video_option_y})")
+                pyautogui.click(video_option_x, video_option_y)
+            elif flag == 'call':
+                # Click on "Voice call" option (second in dropdown)
+                voice_option_x = call_button_x - 50
+                voice_option_y = call_button_y + 70  # Further below
+                print(f"DEBUG: Clicking Voice call option at ({voice_option_x}, {voice_option_y})")
+                pyautogui.click(voice_option_x, voice_option_y)
         
-    speak(voris_message)
+        
+    speak(end_message)
 
     # for i in range(1, target_tab):
     #     pyautogui.hotkey('tab')
