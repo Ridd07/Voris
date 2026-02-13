@@ -4,7 +4,15 @@ from playsound import playsound
 import eel
 from engine.command import speak
 from engine.config import ASSISTANT_NAME, VIDEO_CALL_COORDS, VOICE_CALL_COORDS
+
+# Monkey-patching requests.get to bypass pywhatkit's internet check
+import requests
+from unittest.mock import MagicMock
+original_get = requests.get
+requests.get = MagicMock(return_value=MagicMock(status_code=200))
 import pywhatkit as kit
+requests.get = original_get # Restore original requests.get after import
+
 import re
 import sqlite3
 import webbrowser
@@ -289,34 +297,113 @@ def whatsApp(mobile_no, message, flag, name):
 # ai chat bot using Ollama (local LLM)
 def aiChat(query):
     try:
+        import requests
+        import json
+        
         user_input = query.strip()
+        if not user_input:
+            return ""
+            
+        print(f"DEBUG: Ollama prompt: {user_input}")
         
         # System instructions to give the model context
         system_instruction = f"You are {ASSISTANT_NAME}, a helpful and concise AI assistant. Answer the user's question directly and briefly."
         
-        # Combine system instruction and user input for the 'run' command
-        full_prompt = f"System: {system_instruction}\nUser: {user_input}"
-
-        # Call Ollama model
-        result = subprocess.run(
-            ["ollama", "run", "llama3.2"],
-            input=full_prompt,
-            text=True,
-            capture_output=True
-        )
-
-        response = result.stdout.strip()
-
-        if not response:
-            response = "Sorry, I did not understand that."
-
-        print(response)
-        speak(response)
-        return response
+        # Call Ollama API instead of subprocess for much better performance
+        payload = {
+            "model": "llama3.2",
+            "prompt": f"System: {system_instruction}\nUser: {user_input}",
+            "stream": False
+        }
+        
+        response = requests.post("http://localhost:11434/api/generate", json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            response_text = result.get("response", "").strip()
+            
+            if not response_text:
+                response_text = "Sorry, I did not understand that."
+                
+            print(f"DEBUG: Ollama response: {response_text}")
+            speak(response_text)
+            return response_text
+        else:
+            print(f"ERROR: Ollama API returned status {response.status_code}")
+            speak("Sorry, I am facing an issue with the AI chat.")
+            return ""
 
     except Exception as err:
         print(f"Ollama Chat Error: {err}")
         speak("Sorry, I am facing an error.")
         return ""
 
+#android automation 
 
+def get_adb_device():
+    try:
+        # Run 'adb devices' command
+        result = subprocess.run(['adb', 'devices'], capture_output=True, text=True)
+        lines = result.stdout.strip().split('\n')[1:] # Skip the first line "List of devices attached"
+        
+        devices = []
+        for line in lines:
+            if line.strip():
+                parts = line.split('\t')
+                if len(parts) == 2:
+                    serial, status = parts
+                    if status == 'device':
+                        devices.append(serial)
+        
+        if not devices:
+            return None
+        
+        # Prioritize Wi-Fi connection (contains ':5555')
+        for serial in devices:
+            if ':5555' in serial:
+                return serial
+        
+        # Fallback to the first available device
+        return devices[0]
+    except Exception as e:
+        print(f"Error detecting ADB devices: {e}")
+        return None
+
+def makeCall(name, mobileNo):
+    mobileNo = mobileNo.replace(" ", "")
+    speak("Calling "+name)
+    
+    serial = get_adb_device()
+    if serial:
+        print(f"DEBUG: Targeting ADB device {serial}")
+        command = f'adb -s {serial} shell am start -a android.intent.action.CALL -d tel:{mobileNo}'
+        os.system(command)
+    else:
+        print("ERROR: No ADB device found for call.")
+        speak("Device not found. Please check ADB connection.")
+
+# to send message
+def sendMessage(message, mobileNo, name):
+    from engine.helper import replace_spaces_with_percent_s, goback, keyEvent, tapEvents, adbInput
+    message = replace_spaces_with_percent_s(message)
+    mobileNo = replace_spaces_with_percent_s(mobileNo)
+    speak("sending message")
+    goback(4)
+    time.sleep(1)
+    keyEvent(3)
+
+    #open sms app
+    tapEvents(136, 2220)
+    #Start chat
+    tapEvents(819, 2192)
+    #search mobile no
+    adbInput(mobileNo)
+    #tap on input
+    tapEvents(601, 574)
+    # tap on input
+    tapEvents(390, 2270)
+    #message
+    adbInput(message)
+    #send
+    tapEvents(957, 1397)
+    speak("message send sucessfully to "+name)
