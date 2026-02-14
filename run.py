@@ -22,7 +22,7 @@ if __name__ == '__main__':
         p1 = multiprocessing.Process(target=startJarvis)
         p2 = multiprocessing.Process(target=listenHotword)
         p1.start()
-        subprocess.call([r'device.bat'])
+        # subprocess.call([r'device.bat'])
         
         # # Detect OS and run appropriate device script
         # if platform.system() == 'Windows':

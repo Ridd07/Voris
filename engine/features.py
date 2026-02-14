@@ -384,26 +384,37 @@ def makeCall(name, mobileNo):
 
 # to send message
 def sendMessage(message, mobileNo, name):
-    from engine.helper import replace_spaces_with_percent_s, goback, keyEvent, tapEvents, adbInput
-    message = replace_spaces_with_percent_s(message)
-    mobileNo = replace_spaces_with_percent_s(mobileNo)
-    speak("sending message")
-    goback(4)
-    time.sleep(1)
-    keyEvent(3)
+    from engine.helper import tapEvents
+    
+    # Clean mobile number
+    mobileNo = mobileNo.replace(" ", "")
+    
+    speak(f"Sending message to {name}")
+    
+    serial = get_adb_device()
+    if not serial:
+        print("ERROR: No ADB device found.")
+        speak("Device not found. Please check ADB connection.")
+        return
 
-    #open sms app
-    tapEvents(136, 2220)
-    #Start chat
-    tapEvents(819, 2192)
-    #search mobile no
-    adbInput(mobileNo)
-    #tap on input
-    tapEvents(601, 574)
-    # tap on input
-    tapEvents(390, 2270)
-    #message
-    adbInput(message)
-    #send
-    tapEvents(957, 1397)
+    print(f"DEBUG: Using ADB device {serial}")
+
+    # Use Intent to open SMS app directly with number and message
+    # We replace spaces with %20 for the URI body
+    encoded_message = message.replace(" ", "%20")
+    command = f'adb -s {serial} shell am start -a android.intent.action.VIEW -d "sms:{mobileNo}?body={encoded_message}"'
+    
+    print(f"DEBUG: Executing intent command: {command}")
+    os.system(command)
+    
+    # Wait for the app to open and pre-fill the message
+    time.sleep(3)
+    
+    # Final step: Tap the Send button
+    # Note: Pixel coordinates (991, 2146) translated from raw (7934, 17171)
+    print(f"DEBUG: Tapping send button at (991, 2146)")
+    tapEvents(991, 2146, serial=serial)
+    
     speak("message send sucessfully to "+name)
+
+

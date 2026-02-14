@@ -30,25 +30,22 @@ def speak(text):
         except Exception as e:
             print(f"Speech Exception: {e}")
 
-def takecommand():
+def takecommand(silent=False):
     r = sr.Recognizer()
     
     with sr.Microphone() as source:
         print('listening....', flush=True)
         eel.DisplayMessage('listening....')
         
-        # Optional: play a subtle beep or sound to let the user know we are listening
-        # try:
-        #     from engine.features import playAssistantSound
-        #     playAssistantSound()
-        # except:
-        #     pass
-            
         r.pause_threshold = 1
         r.adjust_for_ambient_noise(source, duration=0.5)
-        audio = r.listen(source, timeout=10, phrase_time_limit=None)
+        try:
+            audio = r.listen(source, timeout=10, phrase_time_limit=None)
+        except sr.WaitTimeoutError:
+            if not silent:
+                speak("I didn't hear anything. Please try again.")
+            return ""
 
-    
     try:
         print('recognizing', flush=True)
         eel.DisplayMessage('recognizing.....')
@@ -57,6 +54,8 @@ def takecommand():
         eel.DisplayMessage(query)
         time.sleep(2)
     except Exception:
+        if not silent:
+            speak("I'm sorry, I couldn't understand what you said.")
         return ""
     
     return query.lower()
@@ -65,7 +64,7 @@ def takecommand():
 def allCommands(message=1):
 
     if message == 1:
-        query = takecommand()
+        query = takecommand(silent=True) # Stay silent for the initial hotword/trigger
         if not query:
             return
         print(query)
@@ -87,28 +86,40 @@ def allCommands(message=1):
             PlayYoutube(query)
 
         elif "send message" in query or "send a message" in query or "phone call" in query or "call" in query or "video call" in query:
-            from engine.features import findContact, whatsApp, makeCall
+            from engine.features import findContact, whatsApp, makeCall, sendMessage
             contact_no, name = findContact(query)
             if(contact_no != 0):
-                speak("Which mode you want to use whatsapp or mobile")
-                preferance = takecommand()
-                print(preferance)
+                speak("Which mode you want to use: WhatsApp or Mobile?")
+                
+                # Try to get preference up to 2 times
+                preference = ""
+                for attempt in range(2):
+                    preference = takecommand().lower()
+                    if "mobile" in preference or "whatsapp" in preference:
+                        break
+                    if attempt == 0:
+                        speak("I didn't catch that. Please say WhatsApp or Mobile.")
+                
+                print(f"DEBUG: Selected preference: {preference}")
 
-                if "mobile" in preferance:
-                    if "send message" in query or "send sms" in query:
-                        speak("What message to send")
+                if "mobile" in preference:
+                    if "send message" in query or "send sms" in query or "message" in query:
+                        speak("What message to send?")
                         message = takecommand()
-                        # TODO: Add SMS sending logic if missing, currently only WhatsApp is fully implemented
+                        if message:
+                            sendMessage(message, contact_no, name)
+                        else:
+                            speak("Message is empty, cancelling.")
                     elif "phone call" in query:
                         makeCall(name, contact_no)
                     else:
-                        speak("Please try again")
+                        speak("I'm not sure what you want to do on mobile.")
                             
-                elif "whatsapp" in preferance:
+                elif "whatsapp" in preference:
                     flag = ""
                     if "send message" in query:
                         flag = 'message'
-                        speak("what message to send")
+                        speak("What message to send?")
                         message = takecommand()
                         whatsApp(contact_no, message, flag, name)
                     elif "phone call" in query:
@@ -118,9 +129,12 @@ def allCommands(message=1):
                         flag = 'video'
                         whatsApp(contact_no, '', flag, name)
                     else:
-                        speak("Invalid option")
+                        speak("Invalid option for WhatsApp.")
+                else:
+                    speak("Sorry, I couldn't understand the mode. Please try the command again.")
             else:
                 speak("Contact not found")
+
         
         else:
             from engine.features import aiChat

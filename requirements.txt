@@ -5,3 +5,4 @@ pvporcupine
 pyaudio
 pyautogui
 SpeechRecognition
+opencv-contrib-python

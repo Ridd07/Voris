@@ -23,22 +23,26 @@ def remove_words(input_string, words_to_remove):
     return result_string
 
 #key events like receive call,stop call, go back
-def keyEvent(key_code):
-    command = f'adb shell input keyevent {key_code}'
+def keyEvent(key_code, serial=None):
+    target = f"-s {serial}" if serial else ""
+    command = f'adb {target} shell input keyevent {key_code}'
     os.system(command)
     time.sleep(1)
 
 # Tap event used to tap anywhere on screen
-def tapEvents(x, y):
-    command = f'adb shell input tap {x} {y}'
+def tapEvents(x, y, serial=None):
+    target = f"-s {serial}" if serial else ""
+    command = f'adb {target} shell input tap {x} {y}'
     os.system(command)
     time.sleep(1)
 
 #Input Event is used to insert text in mobile
-def adbInput(message):
-    command = f'adb shell input text "{message}"'
+def adbInput(message, serial=None):
+    target = f"-s {serial}" if serial else ""
+    command = f'adb {target} shell input text "{message}"'
     os.system(command)
     time.sleep(1)
+
 
 #to go complete back
 def goback(key_code):

@@ -1,6 +1,7 @@
 $(document).ready(function () {
     console.log("Document ready - initializing components...");
 
+    eel.init()()
     // Standard text animation
     $(".text").textillate({
         loop: true,
