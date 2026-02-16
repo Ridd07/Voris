@@ -37,8 +37,9 @@ def takecommand(silent=False):
         print('listening....', flush=True)
         eel.DisplayMessage('listening....')
         
-        r.pause_threshold = 1
-        r.adjust_for_ambient_noise(source, duration=0.5)
+        r.pause_threshold = 2.0  # Increased from 1 to allow longer pauses between words
+        r.dynamic_energy_threshold = True
+        r.adjust_for_ambient_noise(source, duration=1.0) # Increased duration for better noise baseline
         try:
             audio = r.listen(source, timeout=10, phrase_time_limit=None)
         except sr.WaitTimeoutError:
@@ -137,8 +138,8 @@ def allCommands(message=1):
 
         
         else:
-            from engine.features import aiChat
-            aiChat(query)
+            from engine.features import geminai
+            geminai(query)
 
     except Exception as err:
         print(f"Error in allCommands: {err}")

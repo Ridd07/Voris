@@ -3,7 +3,7 @@ import os
 from playsound import playsound
 import eel
 from engine.command import speak
-from engine.config import ASSISTANT_NAME, VIDEO_CALL_COORDS, VOICE_CALL_COORDS
+from engine.config import ASSISTANT_NAME, LLM_KEY, VIDEO_CALL_COORDS, VOICE_CALL_COORDS
 
 # Monkey-patching requests.get to bypass pywhatkit's internet check
 import requests
@@ -16,7 +16,7 @@ requests.get = original_get # Restore original requests.get after import
 import re
 import sqlite3
 import webbrowser
-from engine.helper import extract_yt_term
+from engine.helper import extract_yt_term, markdown_to_text, remove_words
 import pvporcupine
 import pyaudio
 import struct
@@ -294,49 +294,49 @@ def whatsApp(mobile_no, message, flag, name):
 #     speak(response)
 #     return response
 
-# ai chat bot using Ollama (local LLM)
-def aiChat(query):
-    try:
-        import requests
-        import json
+# # ai chat bot using Ollama (local LLM)
+# def aiChat(query):
+#     try:
+#         import requests
+#         import json
         
-        user_input = query.strip()
-        if not user_input:
-            return ""
+#         user_input = query.strip()
+#         if not user_input:
+#             return ""
             
-        print(f"DEBUG: Ollama prompt: {user_input}")
+#         print(f"DEBUG: Ollama prompt: {user_input}")
         
-        # System instructions to give the model context
-        system_instruction = f"You are {ASSISTANT_NAME}, a helpful and concise AI assistant. Answer the user's question directly and briefly."
+#         # System instructions to give the model context
+#         system_instruction = f"You are {ASSISTANT_NAME}, a helpful and concise AI assistant. Answer the user's question directly and briefly."
         
-        # Call Ollama API instead of subprocess for much better performance
-        payload = {
-            "model": "llama3.2",
-            "prompt": f"System: {system_instruction}\nUser: {user_input}",
-            "stream": False
-        }
+#         # Call Ollama API instead of subprocess for much better performance
+#         payload = {
+#             "model": "llama3.2",
+#             "prompt": f"System: {system_instruction}\nUser: {user_input}",
+#             "stream": False
+#         }
         
-        response = requests.post("http://localhost:11434/api/generate", json=payload, timeout=30)
+#         response = requests.post("http://localhost:11434/api/generate", json=payload, timeout=30)
         
-        if response.status_code == 200:
-            result = response.json()
-            response_text = result.get("response", "").strip()
+#         if response.status_code == 200:
+#             result = response.json()
+#             response_text = result.get("response", "").strip()
             
-            if not response_text:
-                response_text = "Sorry, I did not understand that."
+#             if not response_text:
+#                 response_text = "Sorry, I did not understand that."
                 
-            print(f"DEBUG: Ollama response: {response_text}")
-            speak(response_text)
-            return response_text
-        else:
-            print(f"ERROR: Ollama API returned status {response.status_code}")
-            speak("Sorry, I am facing an issue with the AI chat.")
-            return ""
+#             print(f"DEBUG: Ollama response: {response_text}")
+#             speak(response_text)
+#             return response_text
+#         else:
+#             print(f"ERROR: Ollama API returned status {response.status_code}")
+#             speak("Sorry, I am facing an issue with the AI chat.")
+#             return ""
 
-    except Exception as err:
-        print(f"Ollama Chat Error: {err}")
-        speak("Sorry, I am facing an error.")
-        return ""
+#     except Exception as err:
+#         print(f"Ollama Chat Error: {err}")
+#         speak("Sorry, I am facing an error.")
+#         return ""
 
 #android automation 
 
@@ -417,4 +417,24 @@ def sendMessage(message, mobileNo, name):
     
     speak("message send sucessfully to "+name)
 
+from google import genai
+def geminai(query):
+    try:
+        query = query.replace(ASSISTANT_NAME, "")
+        query = query.replace("search", "")
+        # Initialize the client with the API key
+        client = genai.Client(api_key=LLM_KEY)
 
+        # Generate a response using the new API
+        response = client.models.generate_content(
+            model="gemini-2.0-flash", contents=query
+        )
+        filter_text = markdown_to_text(response.text)
+        speak(filter_text)
+    except Exception as e:
+        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            print("Error: Gemini API Quota Exceeded (429)")
+            speak("I'm sorry, my AI response limit has been reached for now. Please try again in a minute or type your command instead.")
+        else:
+            print("Error:", e)
+            speak("I encountered an error while processing your AI request.")

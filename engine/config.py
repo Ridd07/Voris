@@ -1,5 +1,5 @@
 ASSISTANT_NAME = "VORIS"
-
+LLM_KEY = "AIzaSyAZI2Rd-Z5sTIyFVBTOfcqG2rY8i6dxSZQ"
 # WhatsApp Call Button Coordinates
 # To find these coordinates:
 # 1. Run: python tools/get_cursor_position.py

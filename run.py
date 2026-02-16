@@ -19,25 +19,22 @@ def listenHotword():
 
 #start both process
 if __name__ == '__main__':
-        p1 = multiprocessing.Process(target=startJarvis)
-        p2 = multiprocessing.Process(target=listenHotword)
+    p1 = multiprocessing.Process(target=startJarvis)
+    p2 = multiprocessing.Process(target=listenHotword)
+    
+    try:
         p1.start()
-        # subprocess.call([r'device.bat'])
-        
-        # # Detect OS and run appropriate device script
-        # if platform.system() == 'Windows':
-        #         subprocess.call([r'device.bat'])
-        # else:  # Linux/Ubuntu
-        #         device_script = os.path.join(os.path.dirname(__file__), 'device.sh')
-        #         subprocess.call(['bash', device_script])
-        
         p2.start()
         p1.join()
-
+    except KeyboardInterrupt:
+        print("\nStopping system...")
+    finally:
+        if p1.is_alive():
+            p1.terminate()
+            p1.join()
         if p2.is_alive():
-                p2.terminate()
-                p2.join()
-        
-        print("system stop")
+            p2.terminate()
+            p2.join()
+        print("System stopped")
     
     

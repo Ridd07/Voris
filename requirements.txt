@@ -6,3 +6,5 @@ pyaudio
 pyautogui
 SpeechRecognition
 opencv-contrib-python
+markdown2
+beautifulsoup4

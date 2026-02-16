@@ -27,7 +27,7 @@ if %ERRORLEVEL% NEQ 0 (
     echo 2. Check your phone screen for "Allow USB debugging?".
     echo 3. Select "Always allow from this computer" and tap OK.
     echo.
-    pause
+    rem pause removed to allow automatic startup
     exit /b 1
 )
 
@@ -64,4 +64,4 @@ echo ==========================================
 echo [PRO TIP] You can now unplug the USB cable.
 echo Everything is set for the next step!
 echo ==========================================
-pause
+rem pause removed to allow automatic startup

@@ -1,43 +1,23 @@
 import cv2
 
-def test_camera(index, backend_name, backend_val):
-    print(f"Testing index {index} with {backend_name}...")
-    try:
-        if backend_val is not None:
-            cap = cv2.VideoCapture(index, backend_val)
-        else:
-            cap = cv2.VideoCapture(index)
-            
-        if not cap.isOpened():
-            print(f"  Failed to open index {index} with {backend_name}")
-            return False
-            
-        ret, frame = cap.read()
-        if ret:
-            print(f"  SUCCESS! Captured frame at index {index} with {backend_name}")
+def test_cameras():
+    print("Checking for available cameras...")
+    for i in range(5):
+        cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            print(f"Camera found at index {i}")
+            ret, frame = cap.read()
+            if ret:
+                print(f"  - Successfully captured a frame at index {i}")
+            else:
+                print(f"  - index {i} opened but failed to capture frame")
             cap.release()
-            return True
         else:
-            print(f"  Failed to read frame at index {index} with {backend_name}")
-        cap.release()
-    except Exception as e:
-        print(f"  Error: {e}")
-    return False
+            print(f"No camera found at index {i}")
 
-backends = [
-    ("Default", None),
-    ("DSHOW", cv2.CAP_DSHOW),
-    ("MSMF", cv2.CAP_MSMF)
-]
-
-found = False
-for i in range(3):
-    for b_name, b_val in backends:
-        if test_camera(i, b_name, b_val):
-            found = True
-            break
-    if found:
-        break
-
-if not found:
-    print("\nNo working camera configuration found. Please check if your camera is connected and not in use by another program.")
+if __name__ == "__main__":
+    test_cameras()
+    print("\nIf no cameras were found/captured, please check:")
+    print("1. Is your webcam plugged in?")
+    print("2. Is another app (Zoom, Teams, Browser) using the camera?")
+    print("3. Check Privacy Settings -> Camera -> Allow desktop apps to access your camera.")

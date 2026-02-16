@@ -22,8 +22,19 @@ def start():
             speak("Hello , Welcome mam, How Can i Help You")
             eel.hideStart()
             playAssistantSound()
+        elif flag == 2:
+            eel.authenticationSuccess()
+            speak("Face Authentication skipped.")
+            eel.hideFaceAuthSuccess()
+            speak("Hello, How can I help you today?")
+            eel.hideStart()
+            playAssistantSound()
         else:
-            speak("Face Authentication Fail")
+            speak("Face Authentication Failed. Entering Guest Mode.")
+            eel.authenticationSuccess()
+            eel.hideFaceAuthSuccess()
+            eel.hideStart()
+            playAssistantSound()
     os.system('start msedge.exe --app="http://localhost:8888/index.html"')
 
     eel.start('index.html', mode=None, host='localhost', block=True, port=8888)

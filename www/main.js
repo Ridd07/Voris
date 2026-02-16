@@ -82,7 +82,7 @@ $(document).ready(function () {
 
             $("#Oval").attr("hidden", true);
             $("#SiriWave").attr("hidden", false);
-            eel.allCommands(message);
+            eel.allCommands(message)();
             $("#chatbox").val("")
             $("#MicBtn").attr('hidden', false);
             $("#sendBtn").attr('hidden', true);
@@ -112,12 +112,12 @@ $(document).ready(function () {
         PlayAssistant(message)
     });
 
-    $("#chatbox").keypress(function (e) { 
+    $("#chatbox").keypress(function (e) {
         key = e.which;
         if (key == 13) {
             let message = $("#chatbox").val()
             PlayAssistant(message)
         }
-        
+
     });
 });
