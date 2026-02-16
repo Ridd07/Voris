@@ -59,6 +59,11 @@ $(document).ready(function () {
         eel.playAssistantSound()
         $("#Oval").attr("hidden", true);
         $("#SiriWave").attr("hidden", false);
+
+        // Clear previous message immediately
+        $(".siri-message .texts li").text("Listening...");
+        $('.siri-message').textillate('start');
+
         eel.allCommands()()
 
     });
@@ -71,6 +76,11 @@ $(document).ready(function () {
             $("#Oval").attr("hidden", true);
             $("#SiriWave").attr("hidden", false);
             $("#SiriWave").show();
+
+            // Clear previous message immediately
+            $(".siri-message .texts li").text("Listening...");
+            $('.siri-message').textillate('start');
+
             eel.allCommands()();
         }
     }

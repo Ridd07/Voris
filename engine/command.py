@@ -37,9 +37,9 @@ def takecommand(silent=False):
         print('listening....', flush=True)
         eel.DisplayMessage('listening....')
         
-        r.pause_threshold = 2.0  # Increased from 1 to allow longer pauses between words
+        r.pause_threshold = 1.0
         r.dynamic_energy_threshold = True
-        r.adjust_for_ambient_noise(source, duration=1.0) # Increased duration for better noise baseline
+        r.adjust_for_ambient_noise(source, duration=0.5)
         try:
             audio = r.listen(source, timeout=10, phrase_time_limit=None)
         except sr.WaitTimeoutError:
@@ -111,7 +111,7 @@ def allCommands(message=1):
                             sendMessage(message, contact_no, name)
                         else:
                             speak("Message is empty, cancelling.")
-                    elif "phone call" in query:
+                    elif "phone call" in query or "call" in query:
                         makeCall(name, contact_no)
                     else:
                         speak("I'm not sure what you want to do on mobile.")
@@ -138,8 +138,8 @@ def allCommands(message=1):
 
         
         else:
-            from engine.features import geminai
-            geminai(query)
+            from engine.features import aiChat
+            aiChat(query)
 
     except Exception as err:
         print(f"Error in allCommands: {err}")
